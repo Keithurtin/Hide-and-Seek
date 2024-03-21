@@ -9,6 +9,7 @@ class Map:
         self.seeker_pos = None
         self.hider_pos = []
         self.numOfHider = 0
+        self.obstacle = []
 
     # Function to read a map from folder maps 
     def read_map(self):
@@ -17,13 +18,16 @@ class Map:
         _path = root / (r"maps/" + filename)
         with open(_path, 'r') as f:
             self.row, self.col = [int(x) for x in next(f).split()]
+            self.row += 2
+            self.col += 2
             self.grid = np.empty((self.row, self.col), 'i')
-            r = 0
+            self.create_map_boundary()
+            r = 1
             for line in f:
-                if (r < self.row):
+                if (r < self.row - 1):
                     arr = np.array([int(x) for x in line.split()])
-                    for c in range(self.col):
-                        self.grid[r, c] = arr[c]
+                    for c in range(1, self.col - 1):
+                        self.grid[r, c] = arr[c - 1]
                         if (self.grid[r, c] == 2):
                             self.hider_pos.append((r, c))
                             self.numOfHider += 1
@@ -32,9 +36,22 @@ class Map:
                     r += 1
                 else:
                     top, left, bottom, right = [int(x) for x in line.split()]
+                    top += 1
+                    left += 1
+                    bottom += 1
+                    right += 1
+                    self.obstacle.append((top, left, bottom, right))
                     for i in range (top, bottom + 1):
                         for j in range(left, right + 1):
                             self.grid[i, j] = 1
+
+    def create_map_boundary(self):
+        for i in range(self.row):
+            self.grid[i, 0] = 1
+            self.grid[i, self.col - 1] = 1
+        for i in range(self.col):
+            self.grid[0, i] = 1
+            self.grid[self.row - 1, i] = 1
 
     def print_map(self):
         for i in range(self.row):
