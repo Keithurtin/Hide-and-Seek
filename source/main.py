@@ -11,22 +11,49 @@
 #############################################################
 
 
-
 from map import *
 from seeker import *
 import os
+import copy
+import pygame
+import time
+
+states = []
+
+FPS = 60
+CELL_SIZE = 40
+WHITE = (255, 255, 255)
+PINK = (238, 162, 173, 255)
+YELLOW = (255, 255, 0)
+BLACK = (0, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
+
+hiderImg = pygame.image.load("/Users/phamtin/mycode/prj/asset/human.png")
+hiderPNG = pygame.transform.scale(hiderImg, (40, 40))
+seekerImg = pygame.image.load("/Users/phamtin/mycode/prj/asset/monster.png")
+seekerPNG = pygame.transform.scale(seekerImg, (40, 40))
+wallImg = pygame.image.load("/Users/phamtin/mycode/prj/asset/wall.png")
+wallPNG = pygame.transform.scale(wallImg, (40, 40))
+pingImg = pygame.image.load("/Users/phamtin/mycode/prj/asset/ping.png")
+pingPNG = pygame.transform.scale(pingImg, (40, 40))
 
 # Calculate distance between 2 points
+
+
 def cal_dist(A, B):
     return max(abs(A[0] - B[0]), abs(A[1] - B[1]))
 
-def output(map, counter):
-    os.system('cls')
-    print("Time: ", counter)
-    map.print_map()
-    pause = input("press Enter to continue")
 
-def target_focus(map : Map, seeker : Seeker, counter, observe_only=False):
+def output(map, counter):
+    # os.system('cls')
+    # print("Time: ", counter)
+    # map.print_map()
+    # pause = input("press Enter to continue")
+    states.append(copy.deepcopy(map.grid))
+
+
+def target_focus(map: Map, seeker: Seeker, counter, observe_only=False):
     route = seeker.backtrack(seeker.chase(map), seeker.priority_target)
     for cell in route:
         seeker.move(map, cell)
@@ -44,7 +71,8 @@ def target_focus(map : Map, seeker : Seeker, counter, observe_only=False):
                 return counter
     return counter
 
-def early_game(map : Map, seeker : Seeker, ping_freq, counter):
+
+def early_game(map: Map, seeker: Seeker, ping_freq, counter):
     for i in range(ping_freq - 1):
         seeker.wander(map)
         counter += 1
@@ -55,7 +83,8 @@ def early_game(map : Map, seeker : Seeker, ping_freq, counter):
             return target_focus(map, seeker, counter)
     return counter
 
-def mid_game(map : Map, seeker : Seeker, counter):
+
+def mid_game(map: Map, seeker: Seeker, counter):
     found = seeker.catched
     counter = target_focus(map, seeker, counter)
     if (seeker.catched > found):
@@ -70,7 +99,8 @@ def mid_game(map : Map, seeker : Seeker, counter):
             if (seeker.catched > found):
                 return counter
 
-def play_level_1(map : Map, seeker : Seeker, ping_freq):
+
+def play_level_1(map: Map, seeker: Seeker, ping_freq):
     counter = 0
     output(map, counter)
     # Wander around before getting any hint about hider's location
@@ -81,16 +111,16 @@ def play_level_1(map : Map, seeker : Seeker, ping_freq):
     seeker.priority_target = map.ping_hider()[0]
     counter = mid_game(map, seeker, counter)
     return 100 + 20 - counter
-    
 
-def play_level_2(map : Map, seeker : Seeker, ping_freq):
+
+def play_level_2(map: Map, seeker: Seeker, ping_freq):
     counter = 0
     output(map, counter)
     # Wander around before getting any hint about hider's location
     counter = early_game(map, seeker, ping_freq, counter)
     if (seeker.catched == map.numOfHider):
         return 100 + 20 * map.numOfHider - counter
-    
+
     ping_list = map.ping_hider()
     while (seeker.catched < map.numOfHider):
         # Go to the nearest announced spot
@@ -103,19 +133,90 @@ def play_level_2(map : Map, seeker : Seeker, ping_freq):
         if (seeker.catched == map.numOfHider):
             return 100 + 20 * map.numOfHider - counter
 
-def play(map : Map, level, ping_freq):
+
+def play(map: Map, level, ping_freq):
     seeker = Seeker(map.seeker_pos[0], map.seeker_pos[1], 3)
     if (level == 1):
         return play_level_1(map, seeker, ping_freq)
     if (level == 2):
         return play_level_2(map, seeker, ping_freq)
 
+
+def redraw(rows, columns, grid, window, seeker):
+    window.fill(WHITE)
+
+    mp = Map()
+    mp.row = rows
+    mp.col = columns
+    mp.grid = grid
+    vision_cells = seeker.get_sight(mp)
+    for cell in vision_cells:
+        pygame.draw.rect(
+            # Yellow with transparency
+            window, PINK, (cell[1] * CELL_SIZE, cell[0] * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+    for i in range(rows):
+        for j in range(columns):
+            rect = pygame.Rect(j * CELL_SIZE, i *
+                               CELL_SIZE, CELL_SIZE, CELL_SIZE)
+            if grid[i, j] == 9:
+                window.blit(pingPNG, rect)
+            elif grid[i, j] == 1:
+                window.blit(wallPNG, rect)
+            elif grid[i, j] == 2:
+                window.blit(hiderPNG, rect)
+            elif grid[i, j] == 3:
+                window.blit(seekerPNG, rect)
+
+    x = 0
+    y = 0
+
+    for l in range(rows):
+        y += CELL_SIZE
+        pygame.draw.line(window, BLACK, (0, y), (CELL_SIZE * columns, y))
+
+    for l in range(columns):
+        x += CELL_SIZE
+        pygame.draw.line(window, BLACK, (x, 0), (x, CELL_SIZE * rows))
+
+
 def main():
+    states.clear()
     map = Map()
     map.read_map()
     level = int(input("Input level: "))
     ping_freq = int(input("Input frequency of hider's announcement: "))
-    print("Score: ", play(map, level, ping_freq))
+    score = play(map, level, ping_freq)
+    pygame.init()
+    rows = map.row
+    columns = map.col
+    screen_width = columns * CELL_SIZE
+    screen_height = rows * CELL_SIZE
+    screen = pygame.display.set_mode((screen_width, screen_height))
+    pygame.display.set_caption("Hide & Seek")
+    run = True
+    clock = pygame.time.Clock()
+
+    count = 1
+    while run:
+        clock.tick(FPS)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+        for state in states:
+            count += 1
+            for i in range(rows):
+                for j in range(columns):
+                    if state[i, j] == 3:
+                        seekerPos = (i, j)
+            seeker = Seeker(seekerPos[0], seekerPos[1], 3)
+            redraw(rows, columns, state, screen, seeker)
+            time.sleep(0.5)
+            pygame.display.update()
+            if count == len(states):
+                run = False
+    print('Score:', score)
+    pygame.quit()
+
 
 if __name__ == "__main__":
     main()
