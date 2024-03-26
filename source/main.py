@@ -29,13 +29,13 @@ BLACK = (0, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 
-hiderImg = pygame.image.load("/Users/phamtin/mycode/prj/asset/human.png")
+hiderImg = pygame.image.load("../asset/human.png")
 hiderPNG = pygame.transform.scale(hiderImg, (40, 40))
-seekerImg = pygame.image.load("/Users/phamtin/mycode/prj/asset/monster.png")
+seekerImg = pygame.image.load("../asset/monster.png")
 seekerPNG = pygame.transform.scale(seekerImg, (40, 40))
-wallImg = pygame.image.load("/Users/phamtin/mycode/prj/asset/wall.png")
+wallImg = pygame.image.load("../asset/wall.png")
 wallPNG = pygame.transform.scale(wallImg, (40, 40))
-pingImg = pygame.image.load("/Users/phamtin/mycode/prj/asset/ping.png")
+pingImg = pygame.image.load("../asset/ping.png")
 pingPNG = pygame.transform.scale(pingImg, (40, 40))
 
 # Calculate distance between 2 points
