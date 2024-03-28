@@ -58,7 +58,7 @@ class Map:
         for i in range(self.row):
             for j in range(self.col):
                 if (self.grid[i, j] == 9):
-                    self.grid[i, j] = -1
+                    self.grid[i, j] = 0
 
     def print_map(self):
         for i in range(self.row):

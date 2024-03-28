@@ -142,8 +142,6 @@ def redraw(rows, columns, grid, window, seeker):
                                CELL_SIZE, CELL_SIZE, CELL_SIZE)
             if grid[i, j] == 9:
                 window.blit(pingPNG, rect)
-            elif grid[i, j] == -1:
-                pygame.draw.rect(window, WHITE, rect)
             elif grid[i, j] == 1:
                 window.blit(wallPNG, rect)
             elif grid[i, j] == 2:
