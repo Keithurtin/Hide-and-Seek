@@ -54,7 +54,8 @@ def output(map, counter):
     map.update_map()
 
 
-def search_around_ping(map: Map, seeker: Seeker, counter, ping_freq, ping_list):
+def search_around_ping(map: Map, seeker: Seeker, counter, ping_freq):
+    global ping_list
     found = seeker.catched
     search_list = seeker.search_around(map, seeker.priority_target)
     for cell in search_list:
@@ -62,13 +63,14 @@ def search_around_ping(map: Map, seeker: Seeker, counter, ping_freq, ping_list):
         if cell not in seeker.observed_list:
             seeker.priority_target = cell
             counter = target_focus(map, seeker, counter,
-                                   ping_freq, ping_list, True)
+                                   ping_freq, True)
             if (seeker.catched > found):
                 return counter
     return counter
 
 
-def target_focus(map: Map, seeker: Seeker, counter: int, ping_freq, ping_list, observe_only=False):
+def target_focus(map: Map, seeker: Seeker, counter: int, ping_freq, observe_only=False):
+    global ping_list
     route = seeker.backtrack(seeker.chase(map), seeker.priority_target)
     for cell in route:
         sight = seeker.get_sight(map)
@@ -77,7 +79,7 @@ def target_focus(map: Map, seeker: Seeker, counter: int, ping_freq, ping_list, o
                 if hider in sight:
                     seeker.priority_target = hider
                     seeker.target_aim = True
-                    return target_focus(map, seeker, counter, ping_freq, ping_list)
+                    return target_focus(map, seeker, counter, ping_freq)
             if not seeker.ping_aim:
                 if ping_list:
                     for ping in ping_list:
@@ -85,7 +87,7 @@ def target_focus(map: Map, seeker: Seeker, counter: int, ping_freq, ping_list, o
                             seeker.priority_target = ping
                             seeker.ping_aim = True
                             counter = search_around_ping(
-                                map, seeker, counter, ping_freq, ping_list)
+                                map, seeker, counter, ping_freq)
                             seeker.ping_aim = False
                             return counter
         seeker.move(map, cell)
@@ -103,14 +105,15 @@ def target_focus(map: Map, seeker: Seeker, counter: int, ping_freq, ping_list, o
 
 def play_level_1_and_2(map: Map, seeker: Seeker, ping_freq):
     counter = 0
-    ping_list = None
+    global ping_list
+    ping_list = []
     while True:
         for i in range(1, map.row - 1):
             for j in range(1, map.col - 1):
                 if (map.grid[i, j] != 1) and ((i, j) not in seeker.observed_list):
                     seeker.priority_target = (i, j)
                     counter = target_focus(
-                        map, seeker, counter, ping_freq, ping_list, True)
+                        map, seeker, counter, ping_freq, True)
                     if (seeker.catched == map.numOfHider):
                         return seeker.catched * 20 - counter
         seeker.observed_list = []
