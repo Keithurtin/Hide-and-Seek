@@ -51,6 +51,8 @@ def output(map, counter):
     # map.print_map()
     # pause = input("press Enter to continue")
     states.append(copy.deepcopy(map.grid))
+    map.update_map()
+
 
 def search_around_ping(map: Map, seeker: Seeker, counter, ping_freq, ping_list):
     found = seeker.catched
@@ -59,10 +61,12 @@ def search_around_ping(map: Map, seeker: Seeker, counter, ping_freq, ping_list):
         # Priority search unseen place because hider can hide behind walls
         if cell not in seeker.observed_list:
             seeker.priority_target = cell
-            counter = target_focus(map, seeker, counter, ping_freq, ping_list, True)
+            counter = target_focus(map, seeker, counter,
+                                   ping_freq, ping_list, True)
             if (seeker.catched > found):
                 return counter
     return counter
+
 
 def target_focus(map: Map, seeker: Seeker, counter: int, ping_freq, ping_list, observe_only=False):
     route = seeker.backtrack(seeker.chase(map), seeker.priority_target)
@@ -80,7 +84,8 @@ def target_focus(map: Map, seeker: Seeker, counter: int, ping_freq, ping_list, o
                         if ping in sight:
                             seeker.priority_target = ping
                             seeker.ping_aim = True
-                            counter = search_around_ping(map, seeker, counter, ping_freq, ping_list)
+                            counter = search_around_ping(
+                                map, seeker, counter, ping_freq, ping_list)
                             seeker.ping_aim = False
                             return counter
         seeker.move(map, cell)
@@ -95,6 +100,7 @@ def target_focus(map: Map, seeker: Seeker, counter: int, ping_freq, ping_list, o
                 return counter
     return counter
 
+
 def play_level_1_and_2(map: Map, seeker: Seeker, ping_freq):
     counter = 0
     ping_list = None
@@ -103,10 +109,12 @@ def play_level_1_and_2(map: Map, seeker: Seeker, ping_freq):
             for j in range(1, map.col - 1):
                 if (map.grid[i, j] != 1) and ((i, j) not in seeker.observed_list):
                     seeker.priority_target = (i, j)
-                    counter = target_focus(map, seeker, counter, ping_freq, ping_list, True)
+                    counter = target_focus(
+                        map, seeker, counter, ping_freq, ping_list, True)
                     if (seeker.catched == map.numOfHider):
                         return seeker.catched * 20 - counter
         seeker.observed_list = []
+
 
 def play(map: Map, level, ping_freq):
     seeker = Seeker(map.seeker_pos[0], map.seeker_pos[1], 3)
@@ -134,6 +142,8 @@ def redraw(rows, columns, grid, window, seeker):
                                CELL_SIZE, CELL_SIZE, CELL_SIZE)
             if grid[i, j] == 9:
                 window.blit(pingPNG, rect)
+            elif grid[i, j] == -1:
+                pygame.draw.rect(window, WHITE, rect)
             elif grid[i, j] == 1:
                 window.blit(wallPNG, rect)
             elif grid[i, j] == 2:

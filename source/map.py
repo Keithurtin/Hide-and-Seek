@@ -3,6 +3,7 @@ import random
 from pathlib import Path
 from termcolor import colored
 
+
 class Map:
 
     def __init__(self) -> None:
@@ -11,7 +12,7 @@ class Map:
         self.numOfHider = 0
         self.obstacle = []
 
-    # Function to read a map from folder maps 
+    # Function to read a map from folder maps
     def read_map(self):
         filename = input("Choose a map in folder \"maps\": ")
         root = Path(__file__).parents[1]
@@ -41,7 +42,7 @@ class Map:
                     bottom += 1
                     right += 1
                     self.obstacle.append((top, left, bottom, right))
-                    for i in range (top, bottom + 1):
+                    for i in range(top, bottom + 1):
                         for j in range(left, right + 1):
                             self.grid[i, j] = 1
 
@@ -53,18 +54,24 @@ class Map:
             self.grid[0, i] = 1
             self.grid[self.row - 1, i] = 1
 
+    def update_map(self):
+        for i in range(self.row):
+            for j in range(self.col):
+                if (self.grid[i, j] == 9):
+                    self.grid[i, j] = -1
+
     def print_map(self):
         for i in range(self.row):
             for j in range(self.col):
                 if (self.grid[i, j] == 3):
-                    print(colored(3, 'red'), end = " ")
+                    print(colored(3, 'red'), end=" ")
                 elif (self.grid[i, j] == 2):
-                    print(colored(2, 'blue'), end = " ")
+                    print(colored(2, 'blue'), end=" ")
                 elif (self.grid[i, j] == 9):
-                    print(colored(0, 'yellow'), end = " ")
+                    print(colored(0, 'yellow'), end=" ")
                     self.grid[i, j] = 0
                 else:
-                    print(self.grid[i, j], end = " ")
+                    print(self.grid[i, j], end=" ")
             print('\n')
 
     # Function to get visible cells of seeker/hiders
@@ -93,7 +100,7 @@ class Map:
         return True
 
     # Function return cells that are crossed when going from point A to point B
-    # If there is any cell which is wall or obstacle on this route, unit stands at 
+    # If there is any cell which is wall or obstacle on this route, unit stands at
     # point A cannot see unit stands at point B
     # This function is constructed base on Brasenham's line algorithm
     # For more information, see https://en.wikipedia.org/wiki/Bresenham's_line_algorithm
@@ -117,15 +124,16 @@ class Map:
         y = 0
         result = []
         for x in range(dx + 1):
-            
-            result.append(np.array([x0 + x * xx + y * yx, y0 + x * xy + y * yy], 'i'))
+
+            result.append(
+                np.array([x0 + x * xx + y * yx, y0 + x * xy + y * yy], 'i'))
 
             if D >= 0:
                 y += 1
                 D -= 2*dx
-            D += 2*dy 
+            D += 2*dy
         return np.array(result, 'i')
-    
+
     # Function to announce the position of hiders
     def ping_hider(self):
         ping_list = []
@@ -143,9 +151,7 @@ class Map:
                     self.grid[x, y] = 9
                     break
         return ping_list
-    
+
     def delete_ping(self, ping_list):
         for ping in ping_list:
             self.grid[ping[0], ping[1]] = 0
-
-
