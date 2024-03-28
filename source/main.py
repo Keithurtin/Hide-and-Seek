@@ -51,7 +51,7 @@ def output(map, counter):
     # map.print_map()
     # pause = input("press Enter to continue")
     states.append(copy.deepcopy(map.grid))
-    map.update_map()
+    # map.update_map()
 
 
 def search_around_ping(map: Map, seeker: Seeker, counter, ping_freq):
