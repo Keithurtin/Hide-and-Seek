@@ -13,6 +13,7 @@ class Seeker:
         self.moves = {}
         self.priority_target = None
         self.target_aim = False
+        self.ping_aim = False
         self.observed_list = []
 
     # Get a list of visible cells of seeker

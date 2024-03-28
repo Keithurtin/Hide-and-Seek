@@ -143,5 +143,9 @@ class Map:
                     self.grid[x, y] = 9
                     break
         return ping_list
+    
+    def delete_ping(self, ping_list):
+        for ping in ping_list:
+            self.grid[ping[0], ping[1]] = 0
 
 
