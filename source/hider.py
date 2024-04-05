@@ -1,49 +1,61 @@
-from map import *
-from main import cal_dist
-
+from Seeker import Seeker
+import random
 
 class Hider:
+    def __init__(self, id, seeker:Seeker, pos:tuple[int, int], pingResetInterval, visionRange, map):
+        self.pos = pos
+        self.is_caught = False
+        self.pingPos = None
+        self.tmpPingPos = 0
+        self.isSetPingPos = False
+        self.pingResetInterval = pingResetInterval
+        self.numberOfSteps = 0
+        self.id = id
+        self.visionRange = visionRange
+        self.sight = {}
 
-    def __init__(self, row, col, vision_range=2) -> None:
-        self.row = row
-        self.col = col
-        self.vision_range = vision_range
-        self.visited_cells = set()
+        map.addHider(self)
 
-    def get_visible_cells(self, map: Map):
-        visible_cells = []
-        for i in range(max(0, self.row - self.vision_range), min(map.row, self.row + self.vision_range + 1)):
-            for j in range(max(0, self.col - self.vision_range), min(map.col, self.col + self.vision_range + 1)):
-                if map.grid[i, j] != 1 and map.is_visible(self.row, self.col, i, j):
-                    visible_cells.append((i, j))
-                    self.visited_cells.add((i, j))
-        return visible_cells
+    def setNumberOfSteps(self, numberOfSteps):
+        self.numberOfSteps = numberOfSteps
 
-    def is_good_position(self, map: Map, visible_cells):
-        for pos in visible_cells:
-            if map.grid[pos[0], pos[1]] == 3:
-                return False
-        return True
+    def sendPosition(self):
+        return self.pos
 
-    def move(self, map: Map):
-        visible_cells = self.get_visible_cells(map)
-        safe_cells = [
-            cell for cell in visible_cells if cell not in map.seeker_pos]
-        if self.is_good_position(map, visible_cells):
-            return 0
-        if safe_cells:
-            seeker_pos = map.seeker_pos
-            max_distance = 0
-            furthest_cell = None
+    def sendPingPos(self, map):
+        if (self.numberOfSteps - 1) % self.pingResetInterval == 0:
+            if self.tmpPingPos == 0:
+                self.pingPos = map.getHiderPingPos(self)
+                self.tmpPingPos += 1
+        else:
+            self.tmpPingPos = 0
+        return self.pingPos
+    
+    def isChangePingPos(self):
+        if (self.numberOfSteps - 1) % self.pingResetInterval == 0:
+            self.isSetPingPos = True
+        else:
+            self.isSetPingPos = False
+        return self.isSetPingPos
+    
+    def getSight(self, map):
+        self.sight = map.getHiderSight(self)
+    
 
-            for cell in safe_cells:
-                distance = cal_dist(cell, seeker_pos)
-                if distance > max_distance:
-                    max_distance = distance
-                    furthest_cell = cell
+    def move(self, map):
+        self.getSight(map)
+        seeker_position = map.seeker.sendPosition()
+        if seeker_position in self.sight:
+            safe_moves = []
+            for direction in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+                new_pos = (self.pos[0] + direction[0], self.pos[1] + direction[1])
+                if map.isSafe(new_pos):
+                    safe_moves.append(new_pos)
 
-            if furthest_cell is not None and map.grid[furthest_cell[0], furthest_cell[1]] != 1:
-                map.grid[self.row, self.col] = 0
-                self.row, self.col = furthest_cell
-                map.grid[self.row, self.col] = 2
-        return 1
+            if safe_moves:
+                new_position = random.choice(safe_moves)
+                self.pos = new_position
+
+
+
+    
