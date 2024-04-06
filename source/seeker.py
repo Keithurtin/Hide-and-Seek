@@ -2,7 +2,7 @@ import numpy
 from Map import Map
 from MoveAction import MoveAction
 import random
-import os
+
 import queue
 
 class Seeker:

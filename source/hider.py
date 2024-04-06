@@ -54,7 +54,7 @@ class Hider:
 
             if safe_moves:
                 new_position = random.choice(safe_moves)
-                self.pos = new_position
+                self.pos = new_position   
 
 
 
