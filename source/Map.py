@@ -131,6 +131,8 @@ class Map:
         possiblePingPos = []
         for i in range(-pingRange + 1, pingRange):
             for j in range(-pingRange + 1, pingRange):
+                if (hiderPos[0] + i < 0 or hiderPos[0] + i >= self.rowsNum or hiderPos[1] + j < 0 or hiderPos[1] + j >= self.colsNum):
+                    continue
                 if (i, j) != (0, 0) and self.grid[hiderPos[0] + i, hiderPos[1] + j] != 1:
                     possiblePingPos.append((hiderPos[0] + i, hiderPos[1] + j))
         pingPos = random.choice(possiblePingPos)
